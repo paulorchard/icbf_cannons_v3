@@ -1,4 +1,6 @@
 {
-  "itemGroup.icbfcannons.islandcraft": "IslandCraft",
-  "item.icbfcannons.icbf_cannon": "ICBF Cannon"
+  "itemGroup.icbfcannons.islandcraft": "ICBF Cannons",
+  "item.icbfcannons.icbf_cannon": "ICBF Cannon",
+  "item.icbfcannons.cannonball": "Cannonball",
+  "entity.icbfcannons.cannonball": "Cannonball"
 }

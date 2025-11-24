@@ -4,17 +4,17 @@
 
 ### Core Infrastructure
 - [x] Project structure setup
-- [ ] Main mod class (`IcbfCannons.java`)
-- [ ] Creative tab registration
-- [ ] Config system setup
-- [ ] Basic networking infrastructure
+- [x] Main mod class (`IcbfCannons.java`)
+- [x] Creative tab registration
+- [x] Config system setup
+- [x] Basic networking infrastructure
 
 ### Resources
 - [x] Copy cannon 3D model
 - [x] Copy textures
 - [x] META-INF/mods.toml
-- [ ] Update version numbers to 3.0.0
-- [ ] Add lang files (en_us.json)
+- [x] Update version numbers to 3.0.0
+- [x] Add lang files (en_us.json)
 
 ## Phase 2: Block System (Week 2)
 
