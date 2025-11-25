@@ -38,8 +38,15 @@ public class StopTargetingPacket {
             if (player != null) {
                 BlockEntity be = player.level().getBlockEntity(cannonPos);
                 if (be instanceof CannonBlockEntity cannonBE) {
-                    // Fire using provided targetPos (server authoritative check will be applied)
-                    cannonBE.fireAtTarget(player, targetPos);
+                    // Create a FireOrder and hand it to the primary cannon. The primary will
+                    // propagate to neighbors according to configured branching rules.
+                    java.util.UUID origin = java.util.UUID.randomUUID();
+                    // If targetPos is BlockPos.ZERO treat as null/no-target
+                    net.minecraft.core.BlockPos tgt = (targetPos.equals(net.minecraft.core.BlockPos.ZERO) ? null : targetPos);
+                    com.icbf.cannons.fire.FireOrder order = new com.icbf.cannons.fire.FireOrder(origin, tgt, 100, 0, 4, 0);
+                    // Attach initiator player UUID so they receive guaranteed impact feedback
+                    if (player != null) order.initiatorPlayer = player.getUUID();
+                    cannonBE.receiveFireOrder(order);
                 }
             }
         });

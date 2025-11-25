@@ -38,6 +38,13 @@ public class ModMessages {
             .consumerMainThread(StopTargetingPacket::handle)
             .add();
 
+        // Impact effect packet (server -> specific client)
+        net.messageBuilder(ImpactEffectPacket.class, id())
+            .decoder(ImpactEffectPacket::new)
+            .encoder(ImpactEffectPacket::toBytes)
+            .consumerMainThread(ImpactEffectPacket::handle)
+            .add();
+
         // Legacy beacon packets removed (client now raytraces locally).
 
         IcbfCannons.LOGGER.info("Registering network messages for " + IcbfCannons.MOD_ID);

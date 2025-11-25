@@ -150,6 +150,14 @@ public class CannonballEntity extends ThrowableProjectile {
                 (float) Config.explosionPower,
                 Level.ExplosionInteraction.TNT
             );
+            // Also send guaranteed visual/sound feedback to the firing player (if known)
+            net.minecraft.world.entity.Entity owner = this.getOwner();
+            if (owner instanceof net.minecraft.server.level.ServerPlayer sp) {
+                com.icbf.cannons.network.ModMessages.sendToPlayer(
+                    new com.icbf.cannons.network.ImpactEffectPacket(this.getX(), this.getY(), this.getZ(), (float)Config.explosionPower),
+                    sp
+                );
+            }
             
             // Remove the projectile
             this.discard();
@@ -261,6 +269,14 @@ public class CannonballEntity extends ThrowableProjectile {
                 (float) Config.explosionPower,
                 Config.enableBlockDamage ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE
             );
+            // Also send guaranteed visual/sound feedback to the firing player (if known)
+            net.minecraft.world.entity.Entity owner = this.getOwner();
+            if (owner instanceof net.minecraft.server.level.ServerPlayer sp) {
+                com.icbf.cannons.network.ModMessages.sendToPlayer(
+                    new com.icbf.cannons.network.ImpactEffectPacket(this.getX(), this.getY(), this.getZ(), (float)Config.explosionPower),
+                    sp
+                );
+            }
             
             // Remove the projectile
             this.discard();

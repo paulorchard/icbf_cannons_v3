@@ -106,17 +106,31 @@ public class BeaconBeamRenderer {
         float f9 = 0.0F;
         float f5 = f4 + f;
         float f6 = Math.min(1.0F, height * 0.01F);
-        
+
         // Try the two-sided variant of the beacon RenderType first
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.beaconBeam(BEAM_LOCATION, true));
-        
-        renderBeamSegment(poseStack, vertexConsumer, f1, f2, f3, 0.2F, 0, height, 0.0F, f8, f8, 0.0F, f9, 0.2F, 0.0F, f5, 1.0F, i);
-        
+
+        // Inner core (narrow, bright)
+        renderBeamSegment(poseStack, vertexConsumer, f1, f2, f3, 1.0F, 0, height, -0.1F, 0.0F, 0.1F, 0.0F, 0.0F, 0.2F, 0.0F, f5, 1.0F, i);
+
+        // Wider square pillar made of 4 faces at 90deg to each other
+        float halfWidth = 0.375F; // ~12 pixels (12/16 = 0.75) half = 0.375
+        float alpha = 0.25F; // 25% transparency as requested
+
+        // front face (z = +halfWidth)
+        renderBeamSegment(poseStack, vertexConsumer, f1, f2, f3, alpha, 0, height, -halfWidth, halfWidth, halfWidth, halfWidth, 0.0F, 0.0F, 0.0F, f5, 1.0F, i);
+        // back face (z = -halfWidth)
+        renderBeamSegment(poseStack, vertexConsumer, f1, f2, f3, alpha, 0, height, halfWidth, -halfWidth, -halfWidth, -halfWidth, 0.0F, 0.0F, 0.0F, f5, 1.0F, i);
+        // right face (x = +halfWidth)
+        renderBeamSegment(poseStack, vertexConsumer, f1, f2, f3, alpha, 0, height, halfWidth, halfWidth, halfWidth, -halfWidth, 0.0F, 0.0F, 0.0F, f5, 1.0F, i);
+        // left face (x = -halfWidth)
+        renderBeamSegment(poseStack, vertexConsumer, f1, f2, f3, alpha, 0, height, -halfWidth, -halfWidth, -halfWidth, halfWidth, 0.0F, 0.0F, 0.0F, f5, 1.0F, i);
+
         poseStack.popPose();
-        
+
+        // Outer animated layer for motion and depth
         f4 = -1.0F + time * 0.1F;
         float f10 = (float)height * (0.5F / f8) + f4;
-        
         renderBeamSegment(poseStack, vertexConsumer, f1, f2, f3, 0.1F, 0, height, -f, -f, f8, -f, -f, f8, 0.0F, f10, 1.0F, i);
         
         poseStack.popPose();
