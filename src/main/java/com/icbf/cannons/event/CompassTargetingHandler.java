@@ -5,6 +5,7 @@ import com.icbf.cannons.block.CannonBlock;
 import com.icbf.cannons.network.ModMessages;
 import com.icbf.cannons.network.StartTargetingPacket;
 import com.icbf.cannons.network.StopTargetingPacket;
+import com.icbf.cannons.util.VSShipRaycastHelper;
 import net.minecraft.client.Minecraft;
 import com.icbf.cannons.client.BeaconBeamRenderer;
 import net.minecraft.world.phys.HitResult;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -83,9 +85,20 @@ public class CompassTargetingHandler {
             // Do an immediate raytrace so the beacon appears without waiting for the next tick
             Minecraft mc = Minecraft.getInstance();
             if (mc != null && mc.getCameraEntity() != null) {
-                HitResult hr0 = mc.getCameraEntity().pick(com.icbf.cannons.Config.beaconMaxDistance, 0.0F, true);
-                if (hr0 != null && hr0.getType() == HitResult.Type.BLOCK) {
-                    BlockHitResult bhr0 = (BlockHitResult) hr0;
+                // Use VS-aware raycast if VS is loaded, otherwise vanilla
+                BlockHitResult bhr0 = VSShipRaycastHelper.raycastWithShips(
+                    mc.getCameraEntity(), 
+                    com.icbf.cannons.Config.beaconMaxDistance, 
+                    0.0F, 
+                    true
+                );
+                IcbfCannons.LOGGER.debug("Immediate raycast returned: {}", bhr0);
+                if (bhr0 != null && bhr0.getType() == HitResult.Type.BLOCK) {
+                    Vec3 eye = mc.getCameraEntity().getEyePosition(0.0F);
+                    double d = eye.distanceTo(bhr0.getLocation());
+                    IcbfCannons.LOGGER.debug("Immediate raycast block at {} (distance={})", bhr0.getBlockPos(), d);
+                }
+                if (bhr0 != null && bhr0.getType() == HitResult.Type.BLOCK) {
                     currentLookedAtBlock = bhr0.getBlockPos();
                     beaconHoldTicks = 5; // hold for a few ticks to reduce flicker
                     BeaconBeamRenderer.setBeaconPosition(currentLookedAtBlock);
@@ -109,12 +122,23 @@ public class CompassTargetingHandler {
         if (isHoldingRightClick && currentTargetingCannon != null) {
             // Check if player released right mouse button
             // While holding, do a raytrace from the player's POV to find the block being looked at
-            HitResult hr = null;
+            BlockHitResult bhr = null;
             if (mc.getCameraEntity() != null) {
-                hr = mc.getCameraEntity().pick(com.icbf.cannons.Config.beaconMaxDistance, 0.0F, true);
+                // Use VS-aware raycast if VS is loaded, otherwise vanilla
+                bhr = VSShipRaycastHelper.raycastWithShips(
+                    mc.getCameraEntity(), 
+                    com.icbf.cannons.Config.beaconMaxDistance, 
+                    0.0F, 
+                    true
+                );
             }
-            if (hr != null && hr.getType() == HitResult.Type.BLOCK) {
-                BlockHitResult bhr = (BlockHitResult) hr;
+            if (bhr != null && bhr.getType() == HitResult.Type.BLOCK) {
+                IcbfCannons.LOGGER.debug("Per-tick raycast returned block {}", bhr.getBlockPos());
+                if (mc.getCameraEntity() != null) {
+                    Vec3 eye = mc.getCameraEntity().getEyePosition(0.0F);
+                    double d = eye.distanceTo(bhr.getLocation());
+                    IcbfCannons.LOGGER.debug("Per-tick raycast block at {} (distance={})", bhr.getBlockPos(), d);
+                }
                 BlockPos hitPos = bhr.getBlockPos();
                 // If we hit water, target the surface (block above water)
                 if (mc.level != null && mc.level.getBlockState(hitPos).getFluidState().is(FluidTags.WATER)) {

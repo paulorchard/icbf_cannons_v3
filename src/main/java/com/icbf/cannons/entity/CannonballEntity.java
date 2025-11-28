@@ -65,14 +65,14 @@ public class CannonballEntity extends ThrowableProjectile {
                 debugLogged = true;
                 BlockPos currentPos = this.blockPosition();
                 
-                System.out.println("=== CANNONBALL DEBUG ===");
-                System.out.println("Angle: " + Math.toDegrees(debugAngle) + "°");
-                System.out.println("Initial velocity: vx=" + debugVx + " vy=" + debugVy + " vz=" + debugVz);
-                System.out.println("Current velocity: " + this.getDeltaMovement());
-                System.out.println("Origin block: " + debugOrigin);
-                System.out.println("Target block: " + debugTarget);
-                System.out.println("First contact: " + currentPos + " (Water)");
-                System.out.println("========================");
+                //System.out.println("=== CANNONBALL DEBUG ===");
+                //System.out.println("Angle: " + Math.toDegrees(debugAngle) + "°");
+                //System.out.println("Initial velocity: vx=" + debugVx + " vy=" + debugVy + " vz=" + debugVz);
+                //System.out.println("Current velocity: " + this.getDeltaMovement());
+                //System.out.println("Origin block: " + debugOrigin);
+                //System.out.println("Target block: " + debugTarget);
+                //System.out.println("First contact: " + currentPos + " (Water)");
+                //System.out.println("========================");
             }
             
             // Explode on water contact
@@ -84,7 +84,17 @@ public class CannonballEntity extends ThrowableProjectile {
                 (float) Config.explosionPower,
                 Level.ExplosionInteraction.NONE
             );
-            
+
+            // Send a guaranteed visual/sound packet to the firing player so they see the impact
+            net.minecraft.world.entity.Entity owner = this.getOwner();
+            if (owner instanceof net.minecraft.server.level.ServerPlayer sp) {
+                com.icbf.cannons.IcbfCannons.LOGGER.info("Sending ImpactEffectPacket to player {} at ({}, {}, {})", sp.getName().getString(), this.getX(), this.getY(), this.getZ());
+                com.icbf.cannons.network.ModMessages.sendToPlayer(
+                    new com.icbf.cannons.network.ImpactEffectPacket(this.getX(), this.getY(), this.getZ(), (float)Config.explosionPower),
+                    sp
+                );
+            }
+
             this.discard();
             return;
         }
@@ -200,7 +210,7 @@ public class CannonballEntity extends ThrowableProjectile {
             // Actual apex data
             double actualApexHeight = maxApexReached - debugOrigin.getY();
             
-            System.out.println("\n" + "=".repeat(80));
+            /*System.out.println("\n" + "=".repeat(80));
             System.out.println("  CANNONBALL BALLISTIC DEBUG PANEL");
             System.out.println("=".repeat(80));
             
@@ -248,15 +258,15 @@ public class CannonballEntity extends ThrowableProjectile {
             System.out.println("  vz: " + String.format("%+.6f", currentVz) + " (initial: " + String.format("%+.6f", debugVz) + ")");
             System.out.println("  Magnitude: " + String.format("%.6f", currentVelMag) + " blocks/tick");
             
-            System.out.println("\n[PHYSICS VERIFICATION]");
+            System.out.println("\n[PHYSICS VERIFICATION]");*/
             double vxChange = Math.abs(currentVx - debugVx);
             double vzChange = Math.abs(currentVz - debugVz);
             double horizontalVelLoss = Math.max(vxChange, vzChange);
-            System.out.println("  Horizontal velocity preserved: " + (horizontalVelLoss < 0.0001 ? "YES ✓" : "NO ✗ (lost " + String.format("%.6f", horizontalVelLoss) + ")"));
+            /*System.out.println("  Horizontal velocity preserved: " + (horizontalVelLoss < 0.0001 ? "YES ✓" : "NO ✗ (lost " + String.format("%.6f", horizontalVelLoss) + ")"));
             System.out.println("  Gravity effect per tick: -" + String.format("%.4f", debugGravity) + " blocks/tick²");
             System.out.println("  vy change: " + String.format("%.4f", debugVy - currentVy) + " blocks/tick (gravity accumulated)");
             
-            System.out.println("\n" + "=".repeat(80) + "\n");
+            System.out.println("\n" + "=".repeat(80) + "\n");*/
         }
         
         // Create explosion at impact point
