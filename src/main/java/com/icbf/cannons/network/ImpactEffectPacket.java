@@ -31,12 +31,17 @@ public class ImpactEffectPacket {
         buf.writeFloat(power);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> supplier) {
+    public static void handle(ImpactEffectPacket msg, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
+            // Debug: log packet reception on client
+            com.icbf.cannons.IcbfCannons.LOGGER.info("ImpactEffectPacket received on client at ({}, {}, {}), power={}", msg.x, msg.y, msg.z, msg.power);
             // Client-side handler: play particles and sound at the specified location
             net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-            if (mc.level == null) return;
+            if (mc == null || mc.level == null) return;
+            double x = msg.x, y = msg.y, z = msg.z;
+            float power = msg.power;
+
             // Explosion emitter particle
             mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER, x, y, z, 0.0, 0.0, 0.0);
             // Explosion particles for flair
@@ -61,7 +66,14 @@ public class ImpactEffectPacket {
 
             // Play explosion sound locally
             mc.level.playLocalSound(x, y, z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.PLAYERS, 4.0F, 1.0F, false);
+
+            // TESTING HELPERS: display a short client chat message so the shooter can confirm packet arrival
+            try {
+                if (mc.player != null) {
+                    mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(String.format("[ICBF] Impact at %.1f %.1f %.1f (power=%.2f)", x, y, z, power)), false);
+                }
+            } catch (Exception ignored) {}
         });
-        return true;
+        ctx.setPacketHandled(true);
     }
 }
